@@ -47,14 +47,17 @@ if __name__ == "__main__":
 
 	# Part 2 Solution
 	obs_points = set()
-	for point in path:
+	global_seen = set()
+	last_point = None
+	for i, point in enumerate(path):
 		x, y, direction = point
-		if (x, y) != start:
+		if (x, y) != start and (x,y) not in global_seen:
 			new_obstacles = {*obstacles, (x, y)}
+			last_x, last_y, last_dir = path[i-1]
 			pick_pos = (x, y)
-			seen = set()
-			pos = start
-			going = 0
+			seen ={*global_seen}
+			pos = (last_x, last_y)
+			going = last_dir
 			while pos[0] >= 0 and pos[0] < max_x and pos[1] >= 0 and pos[1] < max_y:
 				x, y = pos
 				next_x, next_y = x+dirs[going][0], y+dirs[going][1]
@@ -67,4 +70,6 @@ if __name__ == "__main__":
 					obs_points.add(pick_pos)
 					break
 				seen.add((next_x, next_y, going))
+		global_seen.add(point)
+		global_seen.add((point[0], point[1]))
 	print(len(obs_points))
