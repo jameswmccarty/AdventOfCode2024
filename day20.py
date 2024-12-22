@@ -43,7 +43,6 @@ if __name__ == "__main__":
 	found_cheats = 0
 
 	for tx in range(x_dim-2):
-		print("1:,tx
 		for ty in range(y_dim):
 			if (tx, ty) not in walls and (tx+1 ,ty) in walls and (tx+2, ty) not in walls:
 				new_walls = {*walls}
