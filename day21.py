@@ -8,8 +8,9 @@ alpha_pad = ['789','456','123',' 0A']
 dir_pad = [' ^A','<v>']
 delta = {(0,1):'v',(0,-1):'^',(1,0):'>',(-1,0):'<'}
 
-alpha_routes = dict()
 dir_routes = dict()
+
+memo = dict()
 
 def routes(start_char, end_char, pad):
 	for y in range(len(pad)):
@@ -35,9 +36,26 @@ def routes(start_char, end_char, pad):
 					q.append((steps+1,(nx,ny),{*seen,pad[ny][nx]},path+delta[(dx,dy)]))
 	return routes
 
+def route_len(seq, depth):
+	global memo
+	if (seq, depth) in memo:
+		return memo[(seq, depth)]
+	if depth == 0:
+		memo[(seq, depth)] = len(seq)
+		return memo[(seq, depth)]
+	sub_seqs = [ x+'A' for x in seq.split('A') ][:-1]
+	total = 0
+	for sub in sub_seqs:
+		best = float('inf')
+		for trial in next_level('A'+sub):
+			best = min(best, route_len(trial, depth - 1))
+		total += best 
+	memo[(seq, depth)] = total
+	return total
+
 for a in '0123456789A':
 	for b in '0123456789A':
-		alpha_routes[a+b] = routes(a,b,alpha_pad)
+		dir_routes[a+b] = routes(a,b,alpha_pad)
 
 for a in '<v>^A':
 	for b in '<v>^A':
@@ -59,20 +77,26 @@ if __name__ == "__main__":
 			start = 'A'+line.strip()
 			routes = {''}
 			while len(start) > 1:
-				routes = { r+e for e in alpha_routes[start[0]+start[1]] for r in routes }
+				routes = { r+e for e in dir_routes[start[0]+start[1]] for r in routes }
 				start = start[1:]
-			q = []
-			heapq.heapify(q)
+			best = float('inf')
 			for entry in routes:
-				heapq.heappush(q,(len(entry),1,entry))
-			while True:
-				factor, depth, route = heapq.heappop(q)
-				if depth == 3:
-					print(factor, route)
-					break
-				for entry in next_level('A'+route):
-					heapq.heappush(q,(len(entry),depth+1,entry))
-			score += int(''.join(x for x in line if x in '0123456789')) * factor
+				factor = route_len(entry, 2)
+				best = min(best, factor)
+			score += int(''.join(x for x in line if x in '0123456789')) * best
 	print(score)
 	# Part 2 Solution
+	with open("day21_input", "r") as infile:
+		for line in infile:
+			start = 'A'+line.strip()
+			routes = {''}
+			while len(start) > 1:
+				routes = { r+e for e in dir_routes[start[0]+start[1]] for r in routes }
+				start = start[1:]
+			best = float('inf')
+			for entry in routes:
+				factor = route_len(entry, 25)
+				best = min(best, factor)
+			score += int(''.join(x for x in line if x in '0123456789')) * best
+	print(score)
 
