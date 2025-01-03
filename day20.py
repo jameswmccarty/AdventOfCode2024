@@ -19,6 +19,29 @@ def bfs(start, end, walls, limit=float('inf')):
 				seen.add((nx,ny))
 	return None
 
+dists_from_start = None
+dists_from_end = None
+
+def map_bfs(from_pt, walls):
+	map_dict = dict()
+	seen = set()
+	q = [(0,from_pt)]
+	map_dict[from_pt] = 0
+	while q:
+		steps, loc = q.pop(0)
+		if loc not in map_dict:
+			map_dict[loc] = steps 
+		x, y = loc
+		for dx,dy in ((1,0),(0,1),(0,-1),(-1,0)):
+			nx, ny = x+dx, y+dy
+			if (nx,ny) not in seen and (nx,ny) not in walls:
+				q.append((steps+1,(nx,ny)))
+				seen.add((nx,ny))
+	return map_dict
+
+def mhd(a,b):
+	return abs(a[0]-b[0])+abs(a[1]-b[1])
+
 if __name__ == "__main__":
 
 	# Part 1 Solution
@@ -61,3 +84,13 @@ if __name__ == "__main__":
 	print(found_cheats)
 	# Part 2 Solution
 
+	dists_from_start = map_bfs(start, walls)
+	dists_from_end = map_bfs(end, walls)
+
+	found_cheats = 0
+	for a in dists_from_start.keys():
+		for b in dists_from_end.keys():
+			if a!=b and a != end and b != start and mhd(a,b) <= 20:
+				if normal_route - (dists_from_start[a] + mhd(a,b) + dists_from_end[b]) >= 100:
+					found_cheats += 1
+	print(found_cheats)
